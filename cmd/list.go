@@ -29,7 +29,7 @@ var listCmd = &cobra.Command{
 }
 
 func getAssemblies() ([]models.Assembly, error) {
-	rows, err := db.DB.Query("SELECT id, title, start_date, end_date, protocol_pdf FROM assemblies ORDER BY start_date DESC")
+	rows, err := db.DB.Query("SELECT id, title, start_date, end_date, protocol_pdf FROM assemblies ORDER BY start_date ASC")
 	if err != nil {
 		return nil, err
 	}

@@ -63,6 +63,7 @@ func migrate() error {
 		assembly_id INTEGER NOT NULL REFERENCES assemblies(id),
 		title TEXT NOT NULL,
 		sort_number TEXT NOT NULL,
+		status TEXT,
 		pdf_path TEXT
 	);
 
@@ -71,6 +72,7 @@ func migrate() error {
 		motion_id INTEGER NOT NULL REFERENCES motions(id),
 		title TEXT,
 		sort_number TEXT NOT NULL,
+		status TEXT,
 		pdf_path TEXT
 	);
 	`
@@ -80,8 +82,10 @@ func migrate() error {
 		return err
 	}
 
-	// Migration: add title column if it doesn't exist
+	// Migrations for existing databases
 	DB.Exec("ALTER TABLE amendments ADD COLUMN title TEXT")
+	DB.Exec("ALTER TABLE motions ADD COLUMN status TEXT")
+	DB.Exec("ALTER TABLE amendments ADD COLUMN status TEXT")
 
 	return nil
 }

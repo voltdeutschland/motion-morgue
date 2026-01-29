@@ -60,6 +60,7 @@ var updateMotionCmd = &cobra.Command{
 
 		title, _ := cmd.Flags().GetString("title")
 		sort, _ := cmd.Flags().GetString("sort")
+		status, _ := cmd.Flags().GetString("status")
 		pdf, _ := cmd.Flags().GetString("pdf")
 
 		if title != "" {
@@ -69,6 +70,11 @@ var updateMotionCmd = &cobra.Command{
 		}
 		if sort != "" {
 			if _, err := db.DB.Exec("UPDATE motions SET sort_number = ? WHERE id = ?", sort, id); err != nil {
+				return err
+			}
+		}
+		if status != "" {
+			if _, err := db.DB.Exec("UPDATE motions SET status = ? WHERE id = ?", status, id); err != nil {
 				return err
 			}
 		}
@@ -92,6 +98,7 @@ var updateAmendmentCmd = &cobra.Command{
 
 		title, _ := cmd.Flags().GetString("title")
 		sort, _ := cmd.Flags().GetString("sort")
+		status, _ := cmd.Flags().GetString("status")
 		pdf, _ := cmd.Flags().GetString("pdf")
 
 		if title != "" {
@@ -101,6 +108,11 @@ var updateAmendmentCmd = &cobra.Command{
 		}
 		if sort != "" {
 			if _, err := db.DB.Exec("UPDATE amendments SET sort_number = ? WHERE id = ?", sort, id); err != nil {
+				return err
+			}
+		}
+		if status != "" {
+			if _, err := db.DB.Exec("UPDATE amendments SET status = ? WHERE id = ?", status, id); err != nil {
 				return err
 			}
 		}
@@ -127,10 +139,12 @@ func init() {
 	updateCmd.AddCommand(updateMotionCmd)
 	updateMotionCmd.Flags().String("title", "", "Neuer Titel")
 	updateMotionCmd.Flags().String("sort", "", "Neue Sortiernummer")
+	updateMotionCmd.Flags().String("status", "", "Neuer Status")
 	updateMotionCmd.Flags().String("pdf", "", "Pfad zum PDF")
 
 	updateCmd.AddCommand(updateAmendmentCmd)
 	updateAmendmentCmd.Flags().String("title", "", "Neuer Titel")
 	updateAmendmentCmd.Flags().String("sort", "", "Neue Sortiernummer")
+	updateAmendmentCmd.Flags().String("status", "", "Neuer Status")
 	updateAmendmentCmd.Flags().String("pdf", "", "Pfad zum PDF")
 }

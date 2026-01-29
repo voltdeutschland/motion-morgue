@@ -47,7 +47,7 @@ func getAssemblies() ([]models.Assembly, error) {
 }
 
 func getMotions(assemblyID int64) ([]models.Motion, error) {
-	rows, err := db.DB.Query("SELECT id, assembly_id, title, sort_number, pdf_path FROM motions WHERE assembly_id = ? ORDER BY sort_number", assemblyID)
+	rows, err := db.DB.Query("SELECT id, assembly_id, title, sort_number, status, pdf_path FROM motions WHERE assembly_id = ? ORDER BY sort_number", assemblyID)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func getMotions(assemblyID int64) ([]models.Motion, error) {
 	var motions []models.Motion
 	for rows.Next() {
 		var m models.Motion
-		if err := rows.Scan(&m.ID, &m.AssemblyID, &m.Title, &m.SortNumber, &m.PDFPath); err != nil {
+		if err := rows.Scan(&m.ID, &m.AssemblyID, &m.Title, &m.SortNumber, &m.Status, &m.PDFPath); err != nil {
 			return nil, err
 		}
 		motions = append(motions, m)
@@ -65,7 +65,7 @@ func getMotions(assemblyID int64) ([]models.Motion, error) {
 }
 
 func getAmendments(motionID int64) ([]models.Amendment, error) {
-	rows, err := db.DB.Query("SELECT id, motion_id, title, sort_number, pdf_path FROM amendments WHERE motion_id = ? ORDER BY sort_number", motionID)
+	rows, err := db.DB.Query("SELECT id, motion_id, title, sort_number, status, pdf_path FROM amendments WHERE motion_id = ? ORDER BY sort_number", motionID)
 	if err != nil {
 		return nil, err
 	}
@@ -74,12 +74,35 @@ func getAmendments(motionID int64) ([]models.Amendment, error) {
 	var amendments []models.Amendment
 	for rows.Next() {
 		var a models.Amendment
-		if err := rows.Scan(&a.ID, &a.MotionID, &a.Title, &a.SortNumber, &a.PDFPath); err != nil {
+		if err := rows.Scan(&a.ID, &a.MotionID, &a.Title, &a.SortNumber, &a.Status, &a.PDFPath); err != nil {
 			return nil, err
 		}
 		amendments = append(amendments, a)
 	}
 	return amendments, nil
+}
+
+func statusMarker(status string) string {
+	switch status {
+	case "draft":
+		return "DRF"
+	case "submitted":
+		return "SUB"
+	case "withdrawn":
+		return "WDN"
+	case "admitted":
+		return "ADM"
+	case "not_admitted":
+		return "N/A"
+	case "approved":
+		return " ✓ "
+	case "rejected":
+		return " ✗ "
+	case "adopted":
+		return "ADP"
+	default:
+		return " ? "
+	}
 }
 
 const tableWidth = 80
@@ -98,11 +121,12 @@ func truncate(s string, maxLen int) string {
 	return string([]rune(s)[:maxLen-3]) + "..."
 }
 
-func printLine(content string, pdfMarker string) {
-	maxContent := tableWidth - runeLen(pdfMarker) - 6
+func printLine(content string, status string, pdfMarker string) {
+	marker := fmt.Sprintf("[%s|%s]", status, pdfMarker)
+	maxContent := tableWidth - runeLen(marker) - 6
 	content = truncate(content, maxContent)
-	padding := tableWidth - runeLen(content) - runeLen(pdfMarker) - 3
-	fmt.Printf("│%s%s%s   │\n", content, strings.Repeat(" ", padding), pdfMarker)
+	padding := tableWidth - runeLen(content) - runeLen(marker) - 3
+	fmt.Printf("│%s%s%s   │\n", content, strings.Repeat(" ", padding), marker)
 }
 
 func printAssembly(a models.Assembly) {
@@ -114,9 +138,9 @@ func printAssembly(a models.Assembly) {
 		}
 	}
 
-	pdfMarker := "[ - ]"
+	pdfMarker := " - "
 	if a.ProtocolPDF.Valid {
-		pdfMarker = "[PDF]"
+		pdfMarker = "PDF"
 	}
 
 	header := fmt.Sprintf(" %s", a.Title)
@@ -125,28 +149,36 @@ func printAssembly(a models.Assembly) {
 	}
 
 	fmt.Println("┌" + strings.Repeat("─", tableWidth) + "┐")
-	printLine(header, pdfMarker)
+	printLine(header, " - ", pdfMarker)
 	fmt.Println("├" + strings.Repeat("─", tableWidth) + "┤")
 
 	motions, _ := getMotions(a.ID)
 	for _, m := range motions {
-		motionPDF := "[ - ]"
+		motionPDF := " - "
 		if m.PDFPath.Valid {
-			motionPDF = "[PDF]"
+			motionPDF = "PDF"
 		}
-		printLine(fmt.Sprintf("   %s  %s", m.SortNumber, m.Title), motionPDF)
+		motionStatus := statusMarker(m.Status.String)
+		if !m.Status.Valid {
+			motionStatus = " ? "
+		}
+		printLine(fmt.Sprintf("   %s  %s", m.SortNumber, m.Title), motionStatus, motionPDF)
 
 		amendments, _ := getAmendments(m.ID)
 		for _, am := range amendments {
-			amendPDF := "[ - ]"
+			amendPDF := " - "
 			if am.PDFPath.Valid {
-				amendPDF = "[PDF]"
+				amendPDF = "PDF"
+			}
+			amendStatus := statusMarker(am.Status.String)
+			if !am.Status.Valid {
+				amendStatus = " ? "
 			}
 			amendLine := fmt.Sprintf("     └─ %s", am.SortNumber)
 			if am.Title.Valid {
 				amendLine += "  " + am.Title.String
 			}
-			printLine(amendLine, amendPDF)
+			printLine(amendLine, amendStatus, amendPDF)
 		}
 	}
 

@@ -42,10 +42,11 @@ var addMotionCmd = &cobra.Command{
 		assemblyID, _ := cmd.Flags().GetInt64("assembly")
 		sort, _ := cmd.Flags().GetString("sort")
 		title, _ := cmd.Flags().GetString("title")
+		status, _ := cmd.Flags().GetString("status")
 
 		result, err := db.DB.Exec(
-			"INSERT INTO motions (assembly_id, sort_number, title) VALUES (?, ?, ?)",
-			assemblyID, sort, title,
+			"INSERT INTO motions (assembly_id, sort_number, title, status) VALUES (?, ?, ?, ?)",
+			assemblyID, sort, title, nullIfEmpty(status),
 		)
 		if err != nil {
 			return fmt.Errorf("could not create motion: %w", err)
@@ -64,10 +65,11 @@ var addAmendmentCmd = &cobra.Command{
 		motionID, _ := cmd.Flags().GetInt64("motion")
 		sort, _ := cmd.Flags().GetString("sort")
 		title, _ := cmd.Flags().GetString("title")
+		status, _ := cmd.Flags().GetString("status")
 
 		result, err := db.DB.Exec(
-			"INSERT INTO amendments (motion_id, sort_number, title) VALUES (?, ?, ?)",
-			motionID, sort, nullIfEmpty(title),
+			"INSERT INTO amendments (motion_id, sort_number, title, status) VALUES (?, ?, ?, ?)",
+			motionID, sort, nullIfEmpty(title), nullIfEmpty(status),
 		)
 		if err != nil {
 			return fmt.Errorf("could not create amendment: %w", err)
@@ -99,6 +101,7 @@ func init() {
 	addMotionCmd.Flags().Int64("assembly", 0, "ID der Versammlung")
 	addMotionCmd.Flags().String("sort", "", "Sortiernummer (z.B. A001)")
 	addMotionCmd.Flags().String("title", "", "Titel des Antrags")
+	addMotionCmd.Flags().String("status", "", "Status (draft|submitted|withdrawn|admitted|not_admitted|approved|rejected)")
 	addMotionCmd.MarkFlagRequired("assembly")
 	addMotionCmd.MarkFlagRequired("sort")
 	addMotionCmd.MarkFlagRequired("title")
@@ -107,6 +110,7 @@ func init() {
 	addAmendmentCmd.Flags().Int64("motion", 0, "ID des Antrags")
 	addAmendmentCmd.Flags().String("sort", "", "Sortiernummer (z.B. Ä001)")
 	addAmendmentCmd.Flags().String("title", "", "Titel des Änderungsantrags (optional)")
+	addAmendmentCmd.Flags().String("status", "", "Status (draft|submitted|withdrawn|admitted|not_admitted|approved|rejected|adopted)")
 	addAmendmentCmd.MarkFlagRequired("motion")
 	addAmendmentCmd.MarkFlagRequired("sort")
 }

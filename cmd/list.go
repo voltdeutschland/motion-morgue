@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"strings"
+	"unicode/utf8"
 
 	"motion-morgue/db"
 	"motion-morgue/models"
@@ -81,6 +82,29 @@ func getAmendments(motionID int64) ([]models.Amendment, error) {
 	return amendments, nil
 }
 
+const tableWidth = 80
+
+func runeLen(s string) int {
+	return utf8.RuneCountInString(s)
+}
+
+func truncate(s string, maxLen int) string {
+	if runeLen(s) <= maxLen {
+		return s
+	}
+	if maxLen <= 3 {
+		return string([]rune(s)[:maxLen])
+	}
+	return string([]rune(s)[:maxLen-3]) + "..."
+}
+
+func printLine(content string, pdfMarker string) {
+	maxContent := tableWidth - runeLen(pdfMarker) - 6
+	content = truncate(content, maxContent)
+	padding := tableWidth - runeLen(content) - runeLen(pdfMarker) - 3
+	fmt.Printf("│%s%s%s   │\n", content, strings.Repeat(" ", padding), pdfMarker)
+}
+
 func printAssembly(a models.Assembly) {
 	dateRange := ""
 	if a.StartDate.Valid {
@@ -100,15 +124,9 @@ func printAssembly(a models.Assembly) {
 		header += fmt.Sprintf(" (%s)", dateRange)
 	}
 
-	width := 70
-	headerPadding := width - len(header) - len(pdfMarker) - 3
-	if headerPadding < 1 {
-		headerPadding = 1
-	}
-
-	fmt.Println("┌" + strings.Repeat("─", width) + "┐")
-	fmt.Printf("│%s%s%s │\n", header, strings.Repeat(" ", headerPadding), pdfMarker)
-	fmt.Println("├" + strings.Repeat("─", width) + "┤")
+	fmt.Println("┌" + strings.Repeat("─", tableWidth) + "┐")
+	printLine(header, pdfMarker)
+	fmt.Println("├" + strings.Repeat("─", tableWidth) + "┤")
 
 	motions, _ := getMotions(a.ID)
 	for _, m := range motions {
@@ -116,13 +134,7 @@ func printAssembly(a models.Assembly) {
 		if m.PDFPath.Valid {
 			motionPDF = "[PDF]"
 		}
-
-		motionLine := fmt.Sprintf("   %s  %s", m.SortNumber, m.Title)
-		motionPadding := width - len(motionLine) - len(motionPDF) - 3
-		if motionPadding < 1 {
-			motionPadding = 1
-		}
-		fmt.Printf("│%s%s%s │\n", motionLine, strings.Repeat(" ", motionPadding), motionPDF)
+		printLine(fmt.Sprintf("   %s  %s", m.SortNumber, m.Title), motionPDF)
 
 		amendments, _ := getAmendments(m.ID)
 		for _, am := range amendments {
@@ -130,20 +142,15 @@ func printAssembly(a models.Assembly) {
 			if am.PDFPath.Valid {
 				amendPDF = "[PDF]"
 			}
-
 			amendLine := fmt.Sprintf("     └─ %s", am.SortNumber)
 			if am.Title.Valid {
 				amendLine += "  " + am.Title.String
 			}
-			amendPadding := width - len(amendLine) - len(amendPDF) - 3
-			if amendPadding < 1 {
-				amendPadding = 1
-			}
-			fmt.Printf("│%s%s%s │\n", amendLine, strings.Repeat(" ", amendPadding), amendPDF)
+			printLine(amendLine, amendPDF)
 		}
 	}
 
-	fmt.Println("└" + strings.Repeat("─", width) + "┘")
+	fmt.Println("└" + strings.Repeat("─", tableWidth) + "┘")
 }
 
 func init() {

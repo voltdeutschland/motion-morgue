@@ -10,7 +10,7 @@ type Assembly struct {
 	ProtocolPDF sql.NullString
 }
 
-// Valid motion statuses: draft, submitted, withdrawn, admitted, not_admitted, approved, rejected
+// Valid motion statuses: d|s|w|a|b|p|r (draft, submitted, withdrawn, admitted, blocked, passed, rejected)
 type Motion struct {
 	ID         int64
 	AssemblyID int64
@@ -20,7 +20,7 @@ type Motion struct {
 	PDFPath    sql.NullString
 }
 
-// Valid amendment statuses: draft, submitted, withdrawn, admitted, not_admitted, approved, rejected, adopted
+// Valid amendment statuses: d|s|w|a|b|p|r|m (draft, submitted, withdrawn, admitted, blocked, passed, rejected, merged)
 type Amendment struct {
 	ID         int64
 	MotionID   int64

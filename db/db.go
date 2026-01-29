@@ -87,6 +87,24 @@ func migrate() error {
 	DB.Exec("ALTER TABLE motions ADD COLUMN status TEXT")
 	DB.Exec("ALTER TABLE amendments ADD COLUMN status TEXT")
 
+	// Migrate old status values to new short forms
+	DB.Exec("UPDATE motions SET status = 'd' WHERE status = 'draft'")
+	DB.Exec("UPDATE motions SET status = 's' WHERE status = 'submitted'")
+	DB.Exec("UPDATE motions SET status = 'w' WHERE status = 'withdrawn'")
+	DB.Exec("UPDATE motions SET status = 'a' WHERE status = 'admitted'")
+	DB.Exec("UPDATE motions SET status = 'b' WHERE status IN ('not_admitted', 'blocked')")
+	DB.Exec("UPDATE motions SET status = 'p' WHERE status IN ('approved', 'passed')")
+	DB.Exec("UPDATE motions SET status = 'r' WHERE status = 'rejected'")
+
+	DB.Exec("UPDATE amendments SET status = 'd' WHERE status = 'draft'")
+	DB.Exec("UPDATE amendments SET status = 's' WHERE status = 'submitted'")
+	DB.Exec("UPDATE amendments SET status = 'w' WHERE status = 'withdrawn'")
+	DB.Exec("UPDATE amendments SET status = 'a' WHERE status = 'admitted'")
+	DB.Exec("UPDATE amendments SET status = 'b' WHERE status IN ('not_admitted', 'blocked')")
+	DB.Exec("UPDATE amendments SET status = 'p' WHERE status IN ('approved', 'passed')")
+	DB.Exec("UPDATE amendments SET status = 'r' WHERE status = 'rejected'")
+	DB.Exec("UPDATE amendments SET status = 'm' WHERE status IN ('adopted', 'merged')")
+
 	return nil
 }
 

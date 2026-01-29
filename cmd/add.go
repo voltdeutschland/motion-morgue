@@ -101,7 +101,7 @@ func init() {
 	addMotionCmd.Flags().Int64("assembly", 0, "ID der Versammlung")
 	addMotionCmd.Flags().String("sort", "", "Sortiernummer (z.B. A001)")
 	addMotionCmd.Flags().String("title", "", "Titel des Antrags")
-	addMotionCmd.Flags().String("status", "", "Status (draft|submitted|withdrawn|admitted|not_admitted|approved|rejected)")
+	addMotionCmd.Flags().String("status", "", "Status (d|s|w|a|b|p|r = draft|submitted|withdrawn|admitted|blocked|passed|rejected)")
 	addMotionCmd.MarkFlagRequired("assembly")
 	addMotionCmd.MarkFlagRequired("sort")
 	addMotionCmd.MarkFlagRequired("title")
@@ -110,7 +110,7 @@ func init() {
 	addAmendmentCmd.Flags().Int64("motion", 0, "ID des Antrags")
 	addAmendmentCmd.Flags().String("sort", "", "Sortiernummer (z.B. Ä001)")
 	addAmendmentCmd.Flags().String("title", "", "Titel des Änderungsantrags (optional)")
-	addAmendmentCmd.Flags().String("status", "", "Status (draft|submitted|withdrawn|admitted|not_admitted|approved|rejected|adopted)")
+	addAmendmentCmd.Flags().String("status", "", "Status (d|s|w|a|b|p|r|m = draft|submitted|withdrawn|admitted|blocked|passed|rejected|merged)")
 	addAmendmentCmd.MarkFlagRequired("motion")
 	addAmendmentCmd.MarkFlagRequired("sort")
 }

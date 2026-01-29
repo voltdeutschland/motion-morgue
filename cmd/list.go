@@ -84,22 +84,22 @@ func getAmendments(motionID int64) ([]models.Amendment, error) {
 
 func statusMarker(status string) string {
 	switch status {
-	case "draft":
-		return "DRF"
-	case "submitted":
-		return "SUB"
-	case "withdrawn":
-		return "WDN"
-	case "admitted":
-		return "ADM"
-	case "not_admitted":
-		return "N/A"
-	case "approved":
+	case "d", "draft":
+		return " D "
+	case "s", "submitted":
+		return " S "
+	case "w", "withdrawn":
+		return " W "
+	case "a", "admitted":
+		return " A "
+	case "b", "blocked":
+		return " B "
+	case "p", "passed":
 		return " ✓ "
-	case "rejected":
+	case "r", "rejected":
 		return " ✗ "
-	case "adopted":
-		return "ADP"
+	case "m", "merged":
+		return " M "
 	default:
 		return " ? "
 	}

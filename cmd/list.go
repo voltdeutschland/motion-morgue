@@ -149,7 +149,7 @@ func printAssembly(a models.Assembly) {
 	}
 
 	fmt.Println("┌" + strings.Repeat("─", tableWidth) + "┐")
-	printLine(header, " - ", pdfMarker)
+	printLine(fmt.Sprintf(" #%d %s", a.ID, header[1:]), " - ", pdfMarker)
 	fmt.Println("├" + strings.Repeat("─", tableWidth) + "┤")
 
 	motions, _ := getMotions(a.ID)
@@ -162,7 +162,7 @@ func printAssembly(a models.Assembly) {
 		if !m.Status.Valid {
 			motionStatus = " ? "
 		}
-		printLine(fmt.Sprintf("   %s  %s", m.SortNumber, m.Title), motionStatus, motionPDF)
+		printLine(fmt.Sprintf("   #%-3d %s  %s", m.ID, m.SortNumber, m.Title), motionStatus, motionPDF)
 
 		amendments, _ := getAmendments(m.ID)
 		for _, am := range amendments {
@@ -174,7 +174,7 @@ func printAssembly(a models.Assembly) {
 			if !am.Status.Valid {
 				amendStatus = " ? "
 			}
-			amendLine := fmt.Sprintf("     └─ %s", am.SortNumber)
+			amendLine := fmt.Sprintf("        #%-3d └─ %s", am.ID, am.SortNumber)
 			if am.Title.Valid {
 				amendLine += "  " + am.Title.String
 			}

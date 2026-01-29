@@ -69,13 +69,21 @@ func migrate() error {
 	CREATE TABLE IF NOT EXISTS amendments (
 		id INTEGER PRIMARY KEY,
 		motion_id INTEGER NOT NULL REFERENCES motions(id),
+		title TEXT,
 		sort_number TEXT NOT NULL,
 		pdf_path TEXT
 	);
 	`
 
 	_, err := DB.Exec(schema)
-	return err
+	if err != nil {
+		return err
+	}
+
+	// Migration: add title column if it doesn't exist
+	DB.Exec("ALTER TABLE amendments ADD COLUMN title TEXT")
+
+	return nil
 }
 
 func Close() {

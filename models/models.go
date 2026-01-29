@@ -21,6 +21,7 @@ type Motion struct {
 type Amendment struct {
 	ID         int64
 	MotionID   int64
+	Title      sql.NullString
 	SortNumber string
 	PDFPath    sql.NullString
 }

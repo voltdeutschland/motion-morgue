@@ -63,10 +63,11 @@ var addAmendmentCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		motionID, _ := cmd.Flags().GetInt64("motion")
 		sort, _ := cmd.Flags().GetString("sort")
+		title, _ := cmd.Flags().GetString("title")
 
 		result, err := db.DB.Exec(
-			"INSERT INTO amendments (motion_id, sort_number) VALUES (?, ?)",
-			motionID, sort,
+			"INSERT INTO amendments (motion_id, sort_number, title) VALUES (?, ?, ?)",
+			motionID, sort, nullIfEmpty(title),
 		)
 		if err != nil {
 			return fmt.Errorf("could not create amendment: %w", err)
@@ -105,6 +106,7 @@ func init() {
 	addCmd.AddCommand(addAmendmentCmd)
 	addAmendmentCmd.Flags().Int64("motion", 0, "ID des Antrags")
 	addAmendmentCmd.Flags().String("sort", "", "Sortiernummer (z.B. Ä001)")
+	addAmendmentCmd.Flags().String("title", "", "Titel des Änderungsantrags (optional)")
 	addAmendmentCmd.MarkFlagRequired("motion")
 	addAmendmentCmd.MarkFlagRequired("sort")
 }

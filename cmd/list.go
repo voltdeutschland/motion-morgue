@@ -64,7 +64,7 @@ func getMotions(assemblyID int64) ([]models.Motion, error) {
 }
 
 func getAmendments(motionID int64) ([]models.Amendment, error) {
-	rows, err := db.DB.Query("SELECT id, motion_id, sort_number, pdf_path FROM amendments WHERE motion_id = ? ORDER BY sort_number", motionID)
+	rows, err := db.DB.Query("SELECT id, motion_id, title, sort_number, pdf_path FROM amendments WHERE motion_id = ? ORDER BY sort_number", motionID)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func getAmendments(motionID int64) ([]models.Amendment, error) {
 	var amendments []models.Amendment
 	for rows.Next() {
 		var a models.Amendment
-		if err := rows.Scan(&a.ID, &a.MotionID, &a.SortNumber, &a.PDFPath); err != nil {
+		if err := rows.Scan(&a.ID, &a.MotionID, &a.Title, &a.SortNumber, &a.PDFPath); err != nil {
 			return nil, err
 		}
 		amendments = append(amendments, a)
@@ -132,6 +132,9 @@ func printAssembly(a models.Assembly) {
 			}
 
 			amendLine := fmt.Sprintf("     └─ %s", am.SortNumber)
+			if am.Title.Valid {
+				amendLine += "  " + am.Title.String
+			}
 			amendPadding := width - len(amendLine) - len(amendPDF) - 3
 			if amendPadding < 1 {
 				amendPadding = 1
